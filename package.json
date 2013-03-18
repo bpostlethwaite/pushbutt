@@ -1,0 +1,32 @@
+{
+  "name": "pushbutt",
+  "version": "0.0.1",
+  "description": "simple chainable toggle buttons",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "hyperglue": "~0.1.5"
+  },
+  "devDependencies": {
+    "ecstatic": "~0.4.1",
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bpostlethwaite/pushbutt.git"
+  },
+  "keywords": [
+    "push buttons",
+    "button",
+    "toggle button",
+    "radio button"
+  ],
+  "author": "Ben Postlethwaite",
+  "license": "MIT",
+  "readmeFilename": "readme.md",
+  "gitHead": "96370bcaf66a1656b8e4e554075a78d68ae1a865"
+}

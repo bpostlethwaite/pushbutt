@@ -1,3 +1,13 @@
+/*
+ * PUSHBUTT
+ *
+ * Ben Postlethwaite
+ * 2013
+ * code base adapted from @substack's SLIDEWAYS
+ *
+ * License MIT
+ */
+
 "use strict";
 
 var hyperglue = require('hyperglue')
@@ -101,10 +111,10 @@ Button.prototype.set = function (arg) {
      * Perhaps should only emit active states?
      */
     if (this.active) {
-      this.emit(this.event, this.active, this.id)
+      this.emit(this.event, this.id)
 
       for (var group in this.groups) {
-        Button.prototype.emit(group, arg, this.id)
+        Button.prototype.emit(group, this.id)
       }
     }
   }
@@ -122,9 +132,8 @@ Button.prototype.addToggleGroup = function (groupname) {
   if (self.groups[groupname] === undefined) {
     self.groups[groupname] = {
       name: groupname,
-      callback: function (pushstate, id) {
-        if (pushstate && self.active && self.id !== id) {
-          //console.log(pushstate, self.active, self.id)
+      callback: function (id) {
+        if (self.active && self.id !== id) {
           self.active = false
           self.set(self.active)
         }

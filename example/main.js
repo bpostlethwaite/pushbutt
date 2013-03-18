@@ -1,26 +1,44 @@
 var PushButt = require('../.')
 
-
-
 var result = document.querySelector('#result')
-var buttonGroup = []
-var button, text
+  , button = document.querySelector('#button')
+  , buttonGroup = []
+  , butt, text, i
 
-for (var i = 0; i < 5; i++) {
-  button = PushButt({ title: 'button-' + i })
-  button.appendTo('#button')
-  button.addToggleGroup('groupA')
-  button.on(button.event, callback.bind(button) )
-
-  buttonGroup[i] = button
+/*
+ * Build 5 buttons in a toggle group
+ */
+for (i = 0; i < 5; i++) {
+  butt = PushButt({ title: 'button-' + i })
+  butt.appendTo(button)
+  butt.addToggleGroup('groupA')
+  butt.on(butt.event, callback)
+  buttonGroup[i] = butt
 }
-
-function callback (value, id) {
-
-  console.log(this.id + ' got ' + id)
-  // text = document.createTextNode(this.id + ' got ' + id)
-  // result.appendChild(text)
-  // result.appendChild(document.createElement('br'))
-}
-
+/*
+ * Remove 5th button from group
+ */
 buttonGroup[4].removeToggleGroup('groupA')
+
+button.appendChild(document.createElement('br'))
+button.appendChild(document.createElement('br'))
+/*
+ * Build another 5 toggle group
+ */
+for (i = 5; i < 10; i++) {
+  butt = PushButt({ title: 'button-' + i })
+  butt.appendTo(button)
+  butt.addToggleGroup('groupB')
+  butt.on(butt.event, callback )
+
+  buttonGroup[i] = butt
+}
+/*
+ * Remove 10th button
+ */
+buttonGroup[9].removeToggleGroup('groupB')
+
+
+function callback (id) {
+  result.innerHTML = "Caught " + id
+}
