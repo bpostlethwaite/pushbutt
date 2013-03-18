@@ -91,7 +91,7 @@ If `arg` is a `"bool"` this method programmatically toggles the value of the but
 If `arg` is a `"string"` the `set` method sets the displayed title of the button.
 
 ## butt.addToggleGroup(groupname)
-Adds the button `butt` to the group `groupname`. This turns the buttons into a radiobutton like mode, where one and only one button within the group can be active at any time. Setting a new button deactives the active button.
+Adds the button `butt` to the group `groupname`. This turns the buttons into a radiobutton like mode where a single button is active at any time. Setting a new button as active deactives the previously active button.
 
 ## butt.removeToggleGroup(groupname)
 Removes the button `butt` from the group `groupname`.
@@ -99,7 +99,7 @@ Removes the button `butt` from the group `groupname`.
 Events
 ======
 ## butt.on(butt.event, function (id) {})
-Every time a button becomes active it emits event `butt.event` which is a unique ID for that button. The event value is the numberic `id` of the button.
+Every time a button becomes active it emits event `'butt.event'` which is a unique ID for that button. The event value is the numberic `id` of the button.
 
 Attributes
 ==========
@@ -110,10 +110,10 @@ html dom element container
 The numeric ID of the button
 
 ## butt.event
-The emitted event name on button press. Set to `'pushbutt-' + butt.id`
+The emitted event name on button press. Event name is `'pushbutt-' + butt.id`.
 
 ## butt.title
-The title of the button
+The title of the button. Note that setting this property will not cause the title text in the button element to change. The `butt.set('newName')` method will set both `butt.title` as well as set the text in the html element.
 
 install
 =======
@@ -121,10 +121,10 @@ install
 With npm do:
 
 ``` js
-npm install slideways
+npm install pushbutt
 ```
 
-Use browserify to `require('slideways')`.
+Use browserify to `require('pushbutt')`.
 
 license
 =======

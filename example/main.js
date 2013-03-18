@@ -42,3 +42,11 @@ buttonGroup[9].removeToggleGroup('groupB')
 function callback (id) {
   result.innerHTML = "Caught " + id
 }
+
+
+buttonGroup[9].set(true)
+
+process.nextTick(function () {
+  buttonGroup[4].set('frank')
+  buttonGroup[9].set('zappa')
+})
