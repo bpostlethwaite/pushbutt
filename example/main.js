@@ -12,7 +12,7 @@ for (i = 0; i < 5; i++) {
   butt = PushButt({ title: 'button-' + i })
   butt.appendTo(button)
   butt.addToggleGroup('groupA')
-  butt.on(butt.event, callback)
+  butt.on(butt.activeEvent, callback)
   buttonGroup[i] = butt
 }
 /*
@@ -29,7 +29,7 @@ for (i = 5; i < 10; i++) {
   butt = PushButt({ title: 'button-' + i })
   butt.appendTo(button)
   butt.addToggleGroup('groupB')
-  butt.on(butt.event, callback )
+  butt.on(butt.activeEvent, callback )
 
   buttonGroup[i] = butt
 }
@@ -37,7 +37,7 @@ for (i = 5; i < 10; i++) {
  * Remove 10th button
  */
 buttonGroup[9].removeToggleGroup('groupB')
-
+buttonGroup[1].setAttributes({ mode:'push' })
 
 function callback (id) {
   result.innerHTML = "Caught " + id
@@ -47,6 +47,13 @@ function callback (id) {
 buttonGroup[9].set(true)
 
 process.nextTick(function () {
-  buttonGroup[4].set('frank')
-  buttonGroup[9].set('zappa')
+  buttonGroup[4].setAttributes({
+    title: 'frank'
+  , mode: 'push'
+  })
+  buttonGroup[9].setAttributes({
+    title: 'zappa'
+  , mode: 'push'
+  })
+
 })

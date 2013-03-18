@@ -23,32 +23,23 @@ function Button (opts) {
   if (!(this instanceof Button)) return new Button(opts)
   EventEmitter.call(this)
 
-  this.id = Button.prototype.id++
-  this.event = 'pushbutt-' + this.id
-  this.groups = {}
-  this.title = ''
   var self = this
-
-  /*
-   * Load & set default options
-   */
-  if (!opts) opts = {}
-  if (opts.active) this.active = true
-  else this.active = false
-  if (!opts.title && opts.title !== 'string')
-    opts.title = ''
+  this.id = Button.prototype.id++
+  this.activeEvent = 'active-' + this.id
+  this.deactiveEvent = 'deactive-' + this.id
+  this.groups = {}
+  this.active = false
+  this.title = ''
+  this.mode = 'toggle'
 
   /*
    * Set state on next tick
    */
   process.nextTick(function () {
+    self.setAttributes(opts)
     self.set(self.active)
-    self.set(opts.title)
   })
 
-  /*
-   * Insert styling - untested yet
-   */
   if (!insertedCss && opts.insertCss !== false) {
     var style = document.createElement('style');
     style.appendChild(document.createTextNode(css));
@@ -84,7 +75,12 @@ function Button (opts) {
   window.addEventListener('mouseup', mouseup)
   function mouseup () {
     if (pressed) {
-      self.set(!self.active)
+      if (self.mode === 'toggle')
+        self.set(!self.active)
+      if (self.mode === 'push') {
+        self.set(true)
+        self.set(false)
+      }
       pressed = false
     }
   }
@@ -108,22 +104,46 @@ Button.prototype.set = function (arg) {
     this.button.className = arg  ? 'button pressed' : 'button'
 
     /*
-     * Perhaps should only emit active states?
+     * If button has just gone active, alert group buttons
+     * and emit active state
      */
     if (this.active) {
-      this.emit(this.event, this.id)
+      this.emit(this.activeEvent, this.id)
 
       for (var group in this.groups) {
         Button.prototype.emit(group, this.id)
       }
     }
-  }
-
-  if (typeof arg === 'string') {
-    this.text.innerHTML = arg
-    this.title = arg
+    /*
+     * If in toggle mode, user may want deactive events
+     */
+    else if (!this.active && this.mode === 'toggle')
+      this.emit(this.deactiveEvent, this.id)
   }
 }
+
+Button.prototype.setAttributes = function (opts) {
+
+  if (!opts) opts = {}
+  if (typeof opts.active === 'boolean') {
+    if (opts.active) this.active = true
+    else this.active = false
+  }
+  if (opts.title && (typeof opts.title === 'string')) {
+    this.title = opts.title
+    this.text.innerHTML = opts.title
+  }
+
+  if (opts.mode) {
+    if (opts.mode === 'toggle')
+      this.mode = opts.mode
+    if (opts.mode === 'push') {
+      this.mode = opts.mode
+      this.set(false) //Don't want a push button in down state
+    }
+  }
+}
+
 
 Button.prototype.addToggleGroup = function (groupname) {
   var self = this
@@ -149,16 +169,3 @@ Button.prototype.removeToggleGroup = function (groupname) {
     delete this.groups[groupname]
   }
 }
-
-// Button.prototype._elementWidth = function () {
-//   var style = {
-//     root: window.getComputedStyle(this.element),
-//     button: window.getComputedStyle(this.button)
-//   }
-//   return num(style.root.width) - num(style.button.width)
-//        - num(style.button['border-width'])
-
-//   function num (s) {
-//     return Number((/^(\d+)/.exec(s) || [0,0])[1])
-//   }
-// }
