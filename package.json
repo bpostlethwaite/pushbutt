@@ -10,7 +10,7 @@
     "hyperglue": "~0.1.5"
   },
   "devDependencies": {
-    "ecstatic": "~0.4.1",
+    "ecstatic": "~0.4.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
