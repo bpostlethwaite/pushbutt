@@ -1,7 +1,7 @@
 PUSHBUTT
 ========
 
-chainable toggle button widget based on @substack 's [slideways](https://github.com/substack/slideways)
+chainable toggle button widget based on [@substack](https://github.com/substack)'s [slideways](https://github.com/substack/slideways)
 
 Simple example
 ==============
