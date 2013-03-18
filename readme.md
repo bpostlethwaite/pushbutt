@@ -21,7 +21,7 @@ butt.on(butt.event, function (id) {
 
 Multi-Toggle Group Example
 ==========================
-
+[example](http://bpostlethwaite.github.com/pushbutt/)
 ``` js
 
 var PushButt = require('../.')
