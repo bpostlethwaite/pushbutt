@@ -20,24 +20,26 @@ var insertedCss = false;
 
 function Button (opts) {
 
+
   if (!(this instanceof Button)) return new Button(opts)
   EventEmitter.call(this)
 
   var self = this
-  this.id = Button.prototype.id++
-  this.activeEvent = 'active-' + this.id
-  this.deactiveEvent = 'deactive-' + this.id
-  this.groups = {}
-  this.active = false
-  this.title = ''
-  this.mode = 'toggle'
+
+  self.id = Button.id++
+  var activeEvent = 'active-' + self.id
+    , deactiveEvent = 'deactive-' + self.id
+    , groups = {}
+    , active = false
+  self.title = ''
+  self.mode = 'toggle'
 
   /*
    * Set state on next tick
    */
   process.nextTick(function () {
     self.setAttributes(opts)
-    self.set(self.active)
+    self.set(active)
   })
 
   if (!insertedCss && opts.insertCss !== false) {
@@ -55,9 +57,9 @@ function Button (opts) {
   /*
    * Tie to DOM
    */
-  var root = this.element = hyperglue(html);
-  var button = this.button = root.querySelector('.button')
-  var text = this.text = button.querySelector('.title')
+  var root = self.element = hyperglue(html);
+  var button = self.button = root.querySelector('.button')
+  var text = self.text = button.querySelector('.title')
 
   /*
    * Pressed state
@@ -76,7 +78,7 @@ function Button (opts) {
   function mouseup () {
     if (pressed) {
       if (self.mode === 'toggle')
-        self.set(!self.active)
+        self.set(!active)
       if (self.mode === 'push') {
         self.set(true)
         self.set(false)
@@ -84,88 +86,105 @@ function Button (opts) {
       pressed = false
     }
   }
-}
 
-Button.prototype = new EventEmitter
 
-Button.prototype.id = 0
-
-Button.prototype.appendTo = function (target) {
-  if (typeof target === 'string') {
-    target = document.querySelector(target)
+  function appendTo (target) {
+    if (typeof target === 'string') {
+      target = document.querySelector(target)
+    }
+    target.appendChild(self.element)
   }
-  target.appendChild(this.element)
-}
 
-Button.prototype.set = function (arg) {
-  if (typeof arg === 'boolean') {
 
-    this.active = arg
-    this.button.className = arg  ? 'button pressed' : 'button'
+  function set (arg) {
+    if (typeof arg === 'boolean') {
+
+      active = arg
+      self.button.className = arg  ? 'button pressed' : 'button'
 
     /*
      * If button has just gone active, alert group buttons
      * and emit active state
      */
-    if (this.active) {
-      this.emit(this.activeEvent, this.id)
+      if (active) {
+        console.log('emitting!')
+      self.emit(activeEvent, self.id)
 
-      for (var group in this.groups) {
-        Button.prototype.emit(group, this.id)
+      for (var group in groups) {
+        Button.prototype.emit(group, self.id)
       }
     }
-    /*
+      /*
      * If in toggle mode, user may want deactive events
      */
-    else if (!this.active && this.mode === 'toggle')
-      this.emit(this.deactiveEvent, this.id)
-  }
-}
-
-Button.prototype.setAttributes = function (opts) {
-
-  if (!opts) opts = {}
-  if (typeof opts.active === 'boolean') {
-    if (opts.active) this.active = true
-    else this.active = false
-  }
-  if (opts.title && (typeof opts.title === 'string')) {
-    this.title = opts.title
-    this.text.innerHTML = opts.title
-  }
-
-  if (opts.mode) {
-    if (opts.mode === 'toggle')
-      this.mode = opts.mode
-    if (opts.mode === 'push') {
-      this.mode = opts.mode
-      this.set(false) //Don't want a push button in down state
+      else if (!active && self.mode === 'toggle')
+      self.emit(deactiveEvent, self.id)
     }
   }
-}
 
 
-Button.prototype.addToggleGroup = function (groupname) {
-  var self = this
-  if (typeof groupname !== "string")
-    throw new Error ("group names must be strings")
-  if (self.groups[groupname] === undefined) {
-    self.groups[groupname] = {
-      name: groupname,
-      callback: function (id) {
-        if (self.active && self.id !== id) {
-          self.active = false
-          self.set(self.active)
+  function setAttributes (opts) {
+
+    if (!opts) opts = {}
+    if (typeof opts.active === 'boolean') {
+      if (opts.active) active = true
+      else active = false
+    }
+    if (opts.title && (typeof opts.title === 'string')) {
+      self.title = opts.title
+      self.text.innerHTML = opts.title
+    }
+
+    if (opts.mode) {
+      if (opts.mode === 'toggle')
+        self.mode = opts.mode
+    if (opts.mode === 'push') {
+      self.mode = opts.mode
+      self.set(false) //Don't want a push button in down state
+    }
+    }
+  }
+
+
+  function addToggleGroup (groupname) {
+    if (typeof groupname !== "string")
+      throw new Error ("group names must be strings")
+    if (groups[groupname] === undefined) {
+      groups[groupname] = {
+        name: groupname,
+        callback: function (id) {
+          if (active && self.id !== id) {
+            active = false
+            self.set(active)
+          }
         }
       }
+      Button.prototype.on(groupname, groups[groupname].callback)
     }
-    Button.prototype.on(groupname, self.groups[groupname].callback)
   }
+
+  function removeToggleGroup (groupname) {
+    if (groups[groupname]) {
+      self.removeListener(groupname, groups[groupname].callback)
+      delete groups[groupname]
+    }
+  }
+
+
+  self.set = set
+  self.setAttributes = setAttributes
+  self.appendTo = appendTo
+  self.addToggleGroup = addToggleGroup
+  self.removeToggleGroup = removeToggleGroup
+
+  return self
+
 }
 
-Button.prototype.removeToggleGroup = function (groupname) {
-  if (this.groups[groupname]) {
-    this.removeListener(groupname, this.groups[groupname].callback)
-    delete this.groups[groupname]
-  }
-}
+
+/*
+ * Class logic
+ */
+Button.id = 0
+Button.prototype = new EventEmitter
+//require('util').inherits(Button, EventEmitter)
