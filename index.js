@@ -18,21 +18,22 @@ var css = require('./static/css')
 module.exports = Button
 var insertedCss = false;
 
+
+var id = 0
+var groups = {}
+
 function Button (opts) {
 
+  var self = new EventEmitter
 
-  if (!(this instanceof Button)) return new Button(opts)
-  EventEmitter.call(this)
+  self.id = id++
+  self.activeEvent = 'active-' + self.id
+  self.deactiveEvent = 'deactive-' + self.id
 
-  var self = this
-
-  self.id = Button.id++
-  var activeEvent = 'active-' + self.id
-    , deactiveEvent = 'deactive-' + self.id
-    , groups = {}
-    , active = false
-  self.title = ''
-  self.mode = 'toggle'
+  var active = false
+    , title = ''
+    , mode = 'toggle'
+    , myGroups = []
 
   /*
    * Set state on next tick
@@ -59,7 +60,7 @@ function Button (opts) {
    */
   var root = self.element = hyperglue(html);
   var button = self.button = root.querySelector('.button')
-  var text = self.text = button.querySelector('.title')
+  self.text = button.querySelector('.title')
 
   /*
    * Pressed state
@@ -77,9 +78,9 @@ function Button (opts) {
   window.addEventListener('mouseup', mouseup)
   function mouseup () {
     if (pressed) {
-      if (self.mode === 'toggle')
+      if (mode === 'toggle')
         self.set(!active)
-      if (self.mode === 'push') {
+      if (mode === 'push') {
         self.set(true)
         self.set(false)
       }
@@ -107,18 +108,20 @@ function Button (opts) {
      * and emit active state
      */
       if (active) {
-        console.log('emitting!')
-      self.emit(activeEvent, self.id)
+        self.emit(self.activeEvent, self.id)
 
-      for (var group in groups) {
-        Button.prototype.emit(group, self.id)
+        myGroups.forEach( function (group) {
+          groups[group].forEach( function (butt) {
+            if (butt !== self)
+              butt.emit(group, self.id)
+          })
+        })
       }
-    }
       /*
-     * If in toggle mode, user may want deactive events
-     */
-      else if (!active && self.mode === 'toggle')
-      self.emit(deactiveEvent, self.id)
+       * If in toggle mode, user may want deactive events
+       */
+      else if (!active && mode === 'toggle')
+        self.emit(self.deactiveEvent, self.id)
     }
   }
 
@@ -131,42 +134,52 @@ function Button (opts) {
       else active = false
     }
     if (opts.title && (typeof opts.title === 'string')) {
-      self.title = opts.title
+      title = opts.title
       self.text.innerHTML = opts.title
     }
 
     if (opts.mode) {
       if (opts.mode === 'toggle')
-        self.mode = opts.mode
+        mode = opts.mode
     if (opts.mode === 'push') {
-      self.mode = opts.mode
+      mode = opts.mode
       self.set(false) //Don't want a push button in down state
     }
     }
   }
 
 
-  function addToggleGroup (groupname) {
-    if (typeof groupname !== "string")
+  function addToggleGroup (group) {
+    if (typeof group !== "string")
       throw new Error ("group names must be strings")
-    if (groups[groupname] === undefined) {
-      groups[groupname] = {
-        name: groupname,
-        callback: function (id) {
-          if (active && self.id !== id) {
-            active = false
-            self.set(active)
-          }
-        }
-      }
-      Button.prototype.on(groupname, groups[groupname].callback)
+
+    myGroups.push(group)
+
+    if( ! Array.isArray(groups[group]) )  groups[group] = []
+    groups[group].push(self)
+
+    self.on(group, groupCallback)
+  }
+
+  function groupCallback (id) {
+    if (active) {
+      active = false
+      self.set(active)
     }
   }
 
-  function removeToggleGroup (groupname) {
-    if (groups[groupname]) {
-      self.removeListener(groupname, groups[groupname].callback)
-      delete groups[groupname]
+  function removeToggleGroup (group) {
+    var index
+    if (groups[group]) {
+      self.removeListener(group, groupCallback)
+
+      index = groups[group].indexOf(self)
+      if (index !== -1)
+        groups[group].splice(index, 1)
+
+      index = myGroups.indexOf(group)
+      if (index !== -1)
+        myGroups.splice(index, 1)
     }
   }
 
@@ -180,11 +193,3 @@ function Button (opts) {
   return self
 
 }
-
-
-/*
- * Class logic
- */
-Button.id = 0
-Button.prototype = new EventEmitter
-//require('util').inherits(Button, EventEmitter)
